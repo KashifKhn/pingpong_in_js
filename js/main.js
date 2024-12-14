@@ -11,6 +11,8 @@ let leftPaddleY = CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2;
 let rightPaddleY = CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2;
 let paddleSpeed = 0;
 let intervalId = null;
+let fps = 0;
+let lastTimePerf = performance.now();
 
 ctx.fillStyle = "white";
 ctx.fillRect(0, leftPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
@@ -21,10 +23,10 @@ ctx.fillRect(
   PADDLE_HEIGHT,
 );
 
-document.addEventListener("keydown", handleKeydow);
+document.addEventListener("keydown", handleKeydown);
 document.addEventListener("keyup", handleKeyup);
 
-function handleKeydow(event) {
+function handleKeydown(event) {
   if (event.key === "ArrowUp") {
     paddleSpeed = -5;
   }
@@ -33,8 +35,19 @@ function handleKeydow(event) {
   }
 }
 
+function handleKeyup(event) {
+  if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+    paddleSpeed = 0;
+  }
+}
+
 function updateGameState() {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  let currentPerf = performance.now();
+  let diff = currentPerf - lastTimePerf;
+  lastTimePerf = currentPerf;
+
+  fps = Math.round(1000 / diff);
 
   ctx.fillStyle = "white";
   leftPaddleY = Math.max(
@@ -42,12 +55,13 @@ function updateGameState() {
     Math.min(leftPaddleY + paddleSpeed, CANVAS_HEIGHT - PADDLE_HEIGHT),
   );
   ctx.fillRect(0, leftPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
+  ctx.font = "20px Arial";
+  ctx.fillText(`FPS ${fps}`, 10, 20);
 }
 
-function handleKeyup(event) {
-  if (event.key === "ArrowUp" || event.key === "ArrowDown") {
-    paddleSpeed = 0;
-  }
+function gameLoop() {
+  updateGameState();
+  requestAnimationFrame(gameLoop);
 }
 
-setInterval(updateGameState, 8);
+gameLoop();
